@@ -1,0 +1,5 @@
+results/*
+regression.diffs
+regression.out
+*.o
+*.so

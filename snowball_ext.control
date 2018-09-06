@@ -1,0 +1,5 @@
+# snowball_ext extension
+comment = 'snowball_ext - add-on dictionary template with natural language stemmers'
+default_version = '1.0'
+module_pathname = '$libdir/snowball_ext'
+relocatable = true

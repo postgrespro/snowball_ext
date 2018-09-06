@@ -1,0 +1,56 @@
+CREATE EXTENSION snowball_ext;
+CREATE TABLE table1(name varchar);
+INSERT INTO table1 VALUES ('अँगअँकाउछन्'),
+	('PostgreSQL संसारको सबैभन्दा उन्नत खुला स्रोत डाटास हो');
+SELECT d.* FROM table1 AS t, LATERAL ts_debug('nepali', t.name) AS d;
+   alias   |    description    |   token    | dictionaries  | dictionary  |   lexemes    
+-----------+-------------------+------------+---------------+-------------+--------------
+ word      | Word, all letters | अँगअँकाउछन्   | {nepali_stem} | nepali_stem | {अँगअँकाउ}
+ asciiword | Word, all ASCII   | PostgreSQL | {nepali_stem} | nepali_stem | {postgresql}
+ blank     | Space symbols     |            | {}            |             | 
+ word      | Word, all letters | संसारको     | {nepali_stem} | nepali_stem | {संसार}
+ blank     | Space symbols     |            | {}            |             | 
+ word      | Word, all letters | सबैभन्दा     | {nepali_stem} | nepali_stem | {सबैभन्}
+ blank     | Space symbols     |            | {}            |             | 
+ word      | Word, all letters | उन्नत       | {nepali_stem} | nepali_stem | {उन्नत}
+ blank     | Space symbols     |            | {}            |             | 
+ word      | Word, all letters | खुला        | {nepali_stem} | nepali_stem | {खुला}
+ blank     | Space symbols     |            | {}            |             | 
+ word      | Word, all letters | स्रोत       | {nepali_stem} | nepali_stem | {स्रोत}
+ blank     | Space symbols     |            | {}            |             | 
+ word      | Word, all letters | डाटास      | {nepali_stem} | nepali_stem | {डाटास}
+ blank     | Space symbols     |            | {}            |             | 
+ word      | Word, all letters | हो         | {nepali_stem} | nepali_stem | {हो}
+(16 rows)
+
+CREATE INDEX name_idx ON table1 USING GIN (to_tsvector('nepali', "name"));
+SELECT * FROM table1 WHERE to_tsvector('nepali', name)
+	@@ to_tsquery('nepali', 'अँगअँकाउछन्');
+   name   
+----------
+ अँगअँकाउछन्
+(1 row)
+
+SELECT * FROM table1 WHERE to_tsvector('nepali', name)
+	@@ to_tsquery('nepali', 'स्रोत');
+                      name                       
+-------------------------------------------------
+ PostgreSQL संसारको सबैभन्दा उन्नत खुला स्रोत डाटास हो
+(1 row)
+
+DROP INDEX name_idx;
+CREATE INDEX name_idx ON table1 USING GIST (to_tsvector('nepali', "name"));
+SELECT * FROM table1 WHERE to_tsvector('nepali', name)
+	@@ to_tsquery('nepali', 'संसारको');
+                      name                       
+-------------------------------------------------
+ PostgreSQL संसारको सबैभन्दा उन्नत खुला स्रोत डाटास हो
+(1 row)
+
+SELECT * FROM table1 WHERE to_tsvector('nepali', name)
+	@@ to_tsquery('nepali', 'हो');
+                      name                       
+-------------------------------------------------
+ PostgreSQL संसारको सबैभन्दा उन्नत खुला स्रोत डाटास हो
+(1 row)
+
